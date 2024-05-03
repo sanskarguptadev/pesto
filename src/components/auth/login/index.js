@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
-import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../firebase/auth'
+import { doSignInWithEmailAndPassword, doSignInWithGoogle, doSendEmailVerification } from '../../../firebase/auth'
 import { useAuth } from '../../../context/authContext'
 
 const Login = () => {
@@ -16,7 +16,7 @@ const Login = () => {
         if(!isSigningIn) {
             setIsSigningIn(true)
             await doSignInWithEmailAndPassword(email, password)
-            // doSendEmailVerification()
+            doSendEmailVerification();
         }
     }
 

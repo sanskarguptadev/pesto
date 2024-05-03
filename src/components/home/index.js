@@ -1,10 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/authContext';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+
 import CreateTask from './createTask';
 import { Button } from 'antd';
 import TaskCard from './taskCards';
+
+function convertToDesiredFormat(data) {
+    const result = [];
+    for (const [id, task] of Object.entries(data)) {
+        const formattedTask = {
+            id: id,
+            description: task.description,
+            status: task.status,
+            title: task.title
+        };
+        result.push(formattedTask);
+    }
+    return result;
+}
 
 const Home = () => {
     const [addNew, setAddNew] = useState(true);
@@ -13,6 +27,10 @@ const Home = () => {
     const [progress, setProgress] = useState([]);
     const [done, setDone] = useState([]);
     const [all, setAll] = useState([]);
+
+    useEffect(() => {    
+        fetchData();
+    }, []);
 
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -27,25 +45,62 @@ const Home = () => {
         setAddNew(!addNew);
     }
 
-    const addNewTask = (value, close) => {
-        setAll([...all, value]);
-        setAddNew(close);
-    };
-
-    const deleteTask = (id) => {
-        const filteredData = all.filter(card => card?.id !== id);
-        setAll(filteredData);
-    };
-
-    const updateTask = (id, value) => {
-        const repData = [...all];
-        const updateData = repData.map((data) => {
-            if(data.id === id) {
-                data.status = value;
-            };
-            return data;
+    const addNewTaskFirebase = (value) => {
+        const res = fetch(`https://pesto-6986e-default-rtdb.firebaseio.com/${currentUser.uid}/tasks.json`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(value),
         })
-        setAll(updateData);
+
+        if(res) {
+            alert('New Task Added!');
+        }
+    }
+
+    const fetchData = async () => {
+        try {
+          const response = await fetch(`https://pesto-6986e-default-rtdb.firebaseio.com/${currentUser.uid}/tasks.json`);
+          const jsonData = await response.json();
+          const data = jsonData !== null ? convertToDesiredFormat(jsonData): [];
+          setAll(data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+
+    const addNewTask = (value, close) => {
+        addNewTaskFirebase(value);
+        setAddNew(close);
+        fetchData();
+    };
+
+    const deleteTask = async(id) => {
+        try {
+            await fetch(`https://pesto-6986e-default-rtdb.firebaseio.com/${currentUser.uid}/tasks/${id}.json`, {
+                method: "DELETE",
+            });
+            fetchData();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+        fetchData();
+    };
+
+    const updateTask = async (id ,value) => {
+         try {
+            await fetch(`https://pesto-6986e-default-rtdb.firebaseio.com/${currentUser.uid}/tasks/${id}.json`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(value),
+            });
+            fetchData();
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
     }
 
     const handleFilter = value => {
@@ -74,7 +129,6 @@ const Home = () => {
         }
     };
 
-    console.log(all);
     return (
         <div className='text-2xl font-bold pt-14'>
             <p>
@@ -91,7 +145,7 @@ const Home = () => {
                 </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-                {getData(filter).map((card) => {
+                {all.length > 0 && getData(filter).map((card) => {
                     return <TaskCard key={card.id} updateTask={updateTask} task={card} deleteTask={deleteTask} />
                 })}
             </div>

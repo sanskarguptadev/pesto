@@ -10,8 +10,12 @@ const TaskCard = ({task, updateTask, deleteTask}) => {
         deleteTask(id);
     }
 
-    const handleUpdate = () => {
-        updateTask(task.id, updatedStatus);
+    const handleUpdate = (task) => {
+        updateTask(task.id, {
+            'title': task.title,
+            'status': updatedStatus,
+            'description': task.description,
+        });
         setEditing(true);
     };
 
@@ -30,7 +34,7 @@ const TaskCard = ({task, updateTask, deleteTask}) => {
                 </>
                 <p>Description: {task.description}</p>
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    {editing ? <button onClick={() => setEditing(false)}><EditFilled /></button> :  <button onClick={() => handleUpdate(task.id)}><SaveFilled /></button>}
+                    {editing ? <button onClick={() => setEditing(false)}><EditFilled /></button> : <button onClick={() => handleUpdate(task)}><SaveFilled /></button>}
                     <button onClick={() => handleDeleteTask(task.id)}><DeleteOutlined /></button>
                 </div>
             </Card>

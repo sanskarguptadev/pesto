@@ -6,7 +6,7 @@ import Home from "./components/home";
 
 import { AuthProvider } from "./context/authContext";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useRoutes } from 'react-router';
+import { useEffect } from "react";
 
 function App() {
   return (

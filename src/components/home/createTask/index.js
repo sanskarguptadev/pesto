@@ -14,13 +14,8 @@ const CreateTask = (props) => {
   const [status, setStatus] = useState("to-do");
   const [description, setDescription] = useState('');
 
-  const generateRandomId = () => {
-    return '_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-  }
-
   const handleSubmitForm = () => {
     props.addNewTask({
-        id: generateRandomId(),
         title: name,
         status, 
         description
